@@ -44,13 +44,19 @@ int Argser::Link()
     return 0;
 }
 int Argser::Update()
-{ int i=system("g++ QSR-Tool/QSR/main.cpp -std=c++17 -o QSR.E");
-if (((strcmp(this->argv[1],"local-update")==0)||(strcmp(this->argv[1],"real-update")==0))==0){
-    cout<<"\nRecompiling QSR:"<<endl;
+{ 
+if (((strcmp(this->argv[1],"local-update")==0)){
+    int i=system("g++ QSR/main.cpp -std=c++17 -o QSR.E");
+        cout<<"\nRecompiling QSR:"<<endl;
     cout << "\tUpdating configuration.." << endl;
     cout << "\tCompiling QSR With Return code: " << i<< endl;}
     exit(0);
-    return 0;
+else if(((strcmp(this->argv[1],"real-update")==0)){
+int i=system("g++ QSR-Tool/QSR/main.cpp -std=c++17 -o QSR.E");
+
+
+    return 0;}
+    return 1;
 }
 int Argser::Compile()
 {
