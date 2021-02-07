@@ -21,7 +21,7 @@ private:
 
     Configurator Cfg = Configurator();
     int argc;
-    vector<std::string>argv;
+    vector<std::string> argv;
 };
 int parse(string code)
 {
@@ -29,50 +29,53 @@ int parse(string code)
 }
 size_t split(const std::string &txt, std::vector<std::string> &strs, char ch)
 {
-    size_t pos = txt.find( ch );
+    size_t pos = txt.find(ch);
     size_t initialPos = 0;
     strs.clear();
 
     // Decompose statement
-    while( pos != std::string::npos ) {
-        strs.push_back( txt.substr( initialPos, pos - initialPos ) );
+    while (pos != std::string::npos)
+    {
+        strs.push_back(txt.substr(initialPos, pos - initialPos));
         initialPos = pos + 1;
 
-        pos = txt.find( ch, initialPos );
+        pos = txt.find(ch, initialPos);
     }
 
     // Add the last one
-    strs.push_back( txt.substr( initialPos, std::min( pos, txt.size() ) - initialPos + 1 ) );
+    strs.push_back(txt.substr(initialPos, std::min(pos, txt.size()) - initialPos + 1));
 
     return strs.size();
 }
 int Argser::runfile()
 {
     string Code;
-    
+
     // Read from the text file
     ifstream Src(this->argv[charstr]);
     charstr++;
     // Use a while loop together with the getline() function to read the file line by line
-    int SG=0;
+    int SG = 0;
     while (getline(Src, Code))
-    {SG++;
+    {
+        SG++;
         // Output the text from the file
         std::vector<std::string> v;
-        split( Code, v, ' ');
-        cout <<"Line:"<<SG<<" "<< Code<<endl;
-        //if (strcmp(Code.c_str(),"exit")==0){
-            
-        
+        split(Code, v, ' ');
+
         //cout << Code<<endl;
-        int k=v.size();
-        for (int i=0; i<k;i++){
-          auto it = this->argv.begin() + 1;
-            this->argv.insert( it, v[i].c_str());
+        int k = v.size();
+        for (int i = 0; i < k; i++)
+        {
+            auto it = this->argv.begin() + 1;
+            this->argv.push_back(v[i].c_str());
             this->argc++;
+            /*if (strcmp(v[i].c_str(),"exit")==0){
+        return 0;
+        }  */
         }
+        cout << "Line: " << SG << " " << Code << endl;
         //return 0;
-        
     }
     // Close the file
     Src.close();
@@ -152,6 +155,7 @@ int Argser::Parse()
 {
     while (charstr < this->argc)
     {
+        cout << charstr << endl;
         charstr++;
         if (strcmp(this->argv[charstr].c_str(), "init") == 0)
         {
@@ -212,6 +216,10 @@ int Argser::Parse()
             //system("g++ -c Cfg.hpp -o QSR/Private/Config.obj");
             //system("g++ QSR/Private/*.obj -o QSR.E");
         }
+        else if (strcmp(this->argv[charstr].c_str(), "pause") == 0)
+        {
+            system("pause");
+        }
         else if (strcmp(this->argv[charstr].c_str(), "test") == 0)
         {
             Compile();
@@ -229,11 +237,11 @@ int Argser::Parse()
 Argser::Argser(int argc, char **argv)
 {
     this->argc = argc;
-    for (int i=0;i<argc;i++){
-    string f=argv[i];
-    this->argv.push_back(f);
+    for (int i = 0; i < argc; i++)
+    {
+        string f = argv[i];
+        this->argv.push_back(f);
     }
-
 }
 
 int main(int argc, char **argv)
