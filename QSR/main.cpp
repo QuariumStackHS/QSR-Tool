@@ -1,5 +1,5 @@
 #include "includes/config.hpp"
-#include "../Cfg.hpp"
+#include "../../Cfg.hpp"
 /*
 Args parser, analyze and execute
 */
@@ -43,7 +43,7 @@ int Argser::Link()
     return 0;
 }
 int Argser::Update()
-{ int i=system("g++ QSR/main.cpp -std=c++17 -o QSR.E");
+{ int i=system("g++ QSR-Tool/QSR/main.cpp -std=c++17 -o QSR.E");
 if (strcmp(this->argv[1],"update")==0){
     cout<<"\nRecompiling QSR:"<<endl;
     cout << "\tUpdating configuration.." << endl;
@@ -75,8 +75,6 @@ int Argser::Parse()
 
     if (strcmp(this->argv[1], "init") == 0)
     {
-        system("mkdir QSR");
-        system("mksir QSR/Private");
         system("mkdir Src");
         system("mkdir includes");
         system("mkdir Build");
@@ -112,7 +110,6 @@ int Argser::Parse()
     }
     else if (strcmp(this->argv[1], "real-update") == 0){
         system("git clone https://github.com/QuariumStackHS/QSR-Tool ");
-        system("cp QSR-Tool/QSR QSR");
         Update();
     }
     else if (strcmp(this->argv[1], "local-update") == 0)
