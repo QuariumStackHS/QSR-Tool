@@ -45,7 +45,7 @@ int Argser::Link()
 }
 int Argser::Update()
 { 
-if (((strcmp(this->argv[1],"local-update")==0)){
+if ((strcmp(this->argv[1],"local-update")==0)){
     int i=system("g++ QSR/main.cpp -std=c++17 -o QSR.E");
         cout<<"\nRecompiling QSR:"<<endl;
     cout << "\tUpdating configuration.." << endl;
