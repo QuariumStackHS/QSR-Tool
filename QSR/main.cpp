@@ -110,7 +110,12 @@ int Argser::Parse()
         
         */
     }
-    else if (strcmp(this->argv[1], "update") == 0)
+    else if (strcmp(this->argv[1], "real-update") == 0){
+        system("git clone https://github.com/QuariumStackHS/QSR-Tool ");
+        system("cp QSR-Tool/QSR QSR");
+        Update();
+    }
+    else if (strcmp(this->argv[1], "local-update") == 0)
     {
         Update();
         //system("g++ -c Cfg.hpp -o QSR/Private/Config.obj");
