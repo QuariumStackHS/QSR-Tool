@@ -49,13 +49,17 @@ if ((strcmp(this->argv[1],"local-update")==0)){
     int i=system("g++ QSR/main.cpp -std=c++17 -o QSR.E");
         cout<<"\nRecompiling QSR:"<<endl;
     cout << "\tUpdating configuration.." << endl;
-    cout << "\tCompiling QSR With Return code: " << i<< endl;}
-    exit(0);
-else if(((strcmp(this->argv[1],"real-update")==0)){
+    cout << "\tCompiling QSR With Return code: " << i<< endl;
+    
+    exit(0);}
+    
+else if((strcmp(this->argv[1],"real-update")==0)){
 int i=system("g++ QSR-Tool/QSR/main.cpp -std=c++17 -o QSR.E");
+        cout<<"\nRecompiling QSR:"<<endl;
+    cout << "\tUpdating configuration.." << endl;
+    cout << "\tCompiling QSR With Return code: " << i<< endl;
 
-
-    return 0;}
+    exit(0);}
     return 1;
 }
 int Argser::Compile()
