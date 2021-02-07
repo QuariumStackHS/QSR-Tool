@@ -1,5 +1,6 @@
 #include "includes/config.hpp"
-#include "../../Cfg.hpp"
+
+#include "../Cfg.hpp"
 /*
 Args parser, analyze and execute
 */
@@ -44,7 +45,7 @@ int Argser::Link()
 }
 int Argser::Update()
 { int i=system("g++ QSR-Tool/QSR/main.cpp -std=c++17 -o QSR.E");
-if (strcmp(this->argv[1],"update")==0){
+if (((strcmp(this->argv[1],"local-update")==0)||(strcmp(this->argv[1],"real-update")==0))==1){
     cout<<"\nRecompiling QSR:"<<endl;
     cout << "\tUpdating configuration.." << endl;
     cout << "\tCompiling QSR With Return code: " << i<< endl;}
