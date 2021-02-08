@@ -94,7 +94,7 @@ int Argser::runfile()
             this->argv.push_back(v[i].c_str());
             this->argc++;
                 }
-        cout << "Line" << SG<< ":|\t" << Code;
+        cout << "Line " << SG<< ": |\t" << Code;
         int Termwidth=this->Cfg.Termwidth-Code.size()*2;
         for (int i=0;i<Termwidth/2;i++){
             cout<<" ";
@@ -131,8 +131,8 @@ int Argser::Link()
     string Cmd1 = Cmd.append(Cmd03);
     string Cmd04 = to_string(Cfg.CPPLang);
     string Cmd2 = Cmd1.append(Cmd04);
-
-    cout << "Linking using: \"" << Cmd2 << "\" | Return: " << system(Cmd2.c_str()) << endl;
+    int result=system(Cmd2.c_str());
+    cout << BOLDBLUE<<"Linking using: \"" <<BOLDMAGENTA<< Cmd2 <<BLUE <<"\" | Return: " <<GREEN<< result<<RESET << endl;
     return 0;
 }
 int Argser::Update()
@@ -171,7 +171,8 @@ int Argser::Compile()
     string Cmd3 = Cmd2.append(".QSRobj -Iincludes -std=c++");
     string Cmd04 = to_string(Cfg.CPPLang);
     string Cmd05 = Cmd3.append(Cmd04);
-    cout << "Compile using: \"" << Cmd05 << "\" | Return: " << system(Cmd3.c_str()) << endl;
+    int result=system(Cmd3.c_str());
+    cout <<BOLDYELLOW<< "Compile using: \""<<BOLDMAGENTA << Cmd05 <<YELLOW<< "\" | Return: " <<GREEN<< result<<RESET<< endl;
 
     return 0;
 }
