@@ -5,7 +5,8 @@
 /*
 Args parser, analyze and execute
 */
-struct var{
+struct var
+{
     string varname;
     string value;
 };
@@ -16,37 +17,49 @@ public:
     int Parse();
     int Update();
     int runfile();
-    int newVar(string,string);
+    int newVar(string, string);
+    int DeleteVar(string);
     string getVar(string);
+
 private:
-    int varsN=0;
+    int varsN = 0;
     int charstr = 0;
     int Compile();
     int Link();
     int Run();
     vector<std::string> vars;
+    //vector<std::string> vardata;
     Configurator Cfg = Configurator();
     int argc;
     vector<std::string> argv;
 };
-string Argser::getVar(string varname){
-    for (int i=0;i<varsN;i++){
+int Argser::DeleteVar(string){
+    
+    return 0;
+}
+string Argser::getVar(string varname)
+{
+    for (int i = 0; i < varsN; i++)
+    {
         //cout<<this->vars[i+1]<<"?"<<endl;
-        if (strcmp(this->vars[i].c_str(),varname.c_str())==0){
-            
-            return this->vars[i+1];
+        if (strcmp(this->vars[i].c_str(), varname.c_str()) == 0)
+        {
+
+            return this->vars[i + 1];
         }
-        else{
+        else
+        {
             i++;
         }
     }
-    return "Null";
-
+    return varname;
 }
-int Argser::newVar(string varname,string VarValue){
+int Argser::newVar(string varname, string VarValue)
+{
     this->vars.push_back(varname.c_str());
     this->vars.push_back(VarValue.c_str());
-    varsN+=2;
+    varsN += 2;
+    return 2;
 }
 int parse(string code)
 {
@@ -75,10 +88,10 @@ size_t split(const std::string &txt, std::vector<std::string> &strs, char ch)
 int Argser::runfile()
 {
     string Code;
-    cout<<"Running QF Script: "<<this->argv[charstr]<<endl;
+    cout << "Running QF Script: " << getVar(this->argv[charstr]) << endl;
 
     // Read from the text file
-    ifstream Src(this->argv[charstr]);
+    ifstream Src(getVar(this->argv[charstr]).c_str());
     charstr++;
     int SG = 0;
     while (getline(Src, Code))
@@ -93,17 +106,19 @@ int Argser::runfile()
         {
             this->argv.push_back(v[i].c_str());
             this->argc++;
-                }
-        cout << "Line " << SG<< ": |\t" << Code;
-        int Termwidth=this->Cfg.Termwidth-Code.size()*2;
-        for (int i=0;i<Termwidth/2;i++){
-            cout<<" ";
         }
-        if(Termwidth%2!=0){
-            cout<<" ";
+        cout << "Line " << SG << ": | " << Code;
+        int Termwidth = this->Cfg.Termwidth - Code.size() * 2;
+        for (int i = 0; i < Termwidth / 2; i++)
+        {
+            cout << " ";
         }
-        cout<<"|"<<endl;
-        
+        if (Termwidth % 2 != 0)
+        {
+            cout << " ";
+        }
+        cout << "|;" << endl;
+
         //cout << "Line: " << SG<< " " << Code << endl;
         //return 0;
     }
@@ -131,8 +146,8 @@ int Argser::Link()
     string Cmd1 = Cmd.append(Cmd03);
     string Cmd04 = to_string(Cfg.CPPLang);
     string Cmd2 = Cmd1.append(Cmd04);
-    int result=system(Cmd2.c_str());
-    cout << BOLDBLUE<<"Linking using: \"" <<BOLDMAGENTA<< Cmd2 <<BLUE <<"\" | Return: " <<GREEN<< result<<RESET << endl;
+    int result = system(Cmd2.c_str());
+    cout << BOLDBLUE << "Linking using: \"" << BOLDMAGENTA << Cmd2 << BLUE << "\" | Return: " << GREEN << result << RESET << endl;
     return 0;
 }
 int Argser::Update()
@@ -161,9 +176,9 @@ int Argser::Update()
 int Argser::Compile()
 {
     //charstr++;
-    cout << "compiling: " << Cfg.ProgrameName << "." << this->argv[charstr] << endl;
+    cout << "compiling: " << Cfg.ProgrameName << "." << getVar(this->argv[charstr]) << endl;
     string Cmd01 = "g++ src/";
-    string Cmd02 = this->argv[charstr];
+    string Cmd02 = getVar(this->argv[charstr]);
     string Cmd03 = "/main.cpp -c -o Build/obj/";
     string Cmd = Cmd01.append(Cmd02);
     string Cmd1 = Cmd.append(Cmd03);
@@ -171,8 +186,8 @@ int Argser::Compile()
     string Cmd3 = Cmd2.append(".QSRobj -Iincludes -std=c++");
     string Cmd04 = to_string(Cfg.CPPLang);
     string Cmd05 = Cmd3.append(Cmd04);
-    int result=system(Cmd3.c_str());
-    cout <<BOLDYELLOW<< "Compile using: \""<<BOLDMAGENTA << Cmd05 <<YELLOW<< "\" | Return: " <<GREEN<< result<<RESET<< endl;
+    int result = system(Cmd3.c_str());
+    cout << BOLDYELLOW << "Compile using: \"" << BOLDMAGENTA << Cmd05 << YELLOW << "\" | Return: " << GREEN << result << RESET << endl;
 
     return 0;
 }
@@ -200,7 +215,6 @@ int Argser::Parse()
             exit(0);
         }
 
-
         else if (strcmp(this->argv[charstr].c_str(), "-QF") == 0)
         {
             charstr++;
@@ -216,10 +230,14 @@ int Argser::Parse()
         {
             Run();
         }
-        else if (strcmp(this->argv[charstr].c_str(), "var") == 0){
+        else if ((strcmp(this->argv[charstr].c_str(), "del")==0){
             charstr++;
-            newVar(this->argv[charstr],this->argv[charstr+1]);
-            cout<<"new variable named: \""<<this->argv[charstr]<<"\" with value: "<<this->argv[charstr+1]<<endl;
+        }
+        else if (strcmp(this->argv[charstr].c_str(), "var") == 0)
+        {
+            charstr++;
+            newVar(this->argv[charstr], this->argv[charstr + 1]);
+            cout << "new variable named: \"" << this->argv[charstr] << "\" with value: " << this->argv[charstr + 1] << endl;
             charstr++;
         }
         else if (strcmp(this->argv[charstr].c_str(), "add") == 0)
@@ -254,6 +272,10 @@ int Argser::Parse()
         {
             system("pause");
         }
+        else if (strcmp(this->argv[charstr].c_str(), "export") == 0)
+        {
+            charstr++;
+        }
         else if (strcmp(this->argv[charstr].c_str(), "test") == 0)
         {
             Compile();
@@ -265,10 +287,10 @@ int Argser::Parse()
             Compile();
             //system()
         }
-        else if (strcmp(getVar(this->argv[charstr]).c_str(),"Null"))
+        else if (strcmp(getVar(this->argv[charstr]).c_str(), this->argv[charstr].c_str()))
         {
-            cout<<"var:"<<endl;
-            cout<<getVar(this->argv[charstr])<<endl;
+            cout << "var:" << endl;
+            cout << getVar(this->argv[charstr]) << endl;
         }
         //cout<<getVar(this->argv[charstr])<<endl;
         //cout<<"isvar??"<<this->argv[charstr]<<"->"<<(strcmp(getVar(this->argv[charstr]).c_str(),"Null") == 1)<<endl;

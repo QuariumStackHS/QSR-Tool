@@ -44,6 +44,7 @@ class Configurator{
     int buildtype;
     int CPPLang;
     int Termwidth;
+    bool debug;
 
 };
 #endif
