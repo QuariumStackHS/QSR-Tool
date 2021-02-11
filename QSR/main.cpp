@@ -10,6 +10,26 @@ struct var
     string varname;
     string value;
 };
+size_t split(const std::string &txt, std::vector<std::string> &strs, char ch)
+{
+    size_t pos = txt.find(ch);
+    size_t initialPos = 0;
+    strs.clear();
+
+    // Decompose statement
+    while (pos != std::string::npos)
+    {
+        strs.push_back(txt.substr(initialPos, pos - initialPos));
+        initialPos = pos + 1;
+
+        pos = txt.find(ch, initialPos);
+    }
+
+    // Add the last one
+    strs.push_back(txt.substr(initialPos, std::min(pos, txt.size()) - initialPos + 1));
+
+    return strs.size();
+}
 class Helper{
     public:
         Helper();
@@ -55,18 +75,27 @@ private:
     int argc;
     vector<string> argv;
 };
-int Argser::newFunc(string funcName, string FuncCode)
+int Argser::newFunc(string funcName, string funcCode)
 {
-    this->FuncName[this->NextFNCID] = funcName;
-    this->FuncCode[this->NextFNCID] = FuncCode;
-    NextFNCID++;
-    return NextFNCID;
+    
+    this->FuncName.push_back(funcName);
+    this->FuncCode.push_back(funcCode);
+    //cout<<"attempting to Create function: "<<funcName<<" | "<<funcCode<<endl;
+    this->NextFNCID++;
+    
+    return this->NextFNCID;
 }
 int Argser::executeFunc(string tFuncName)
 {
     for (int i=0;i<this->NextFNCID;i++){
         if(strcmp(tFuncName.c_str(),this->FuncName[i].c_str())==0){
-            
+            std::__1::vector<std::__1::string>::iterator it = this->argv.begin();
+            vector<string> Ins;
+            split(this->FuncCode[i],Ins,' ');
+            for (int j=0;j<Ins.size();j++){
+                this->argc+=Ins.size();
+            this->argv.insert(it+charstr+j,Ins[j]);
+            }
         }
     }
     return 0;
@@ -100,26 +129,7 @@ int Argser::newVar(string varname, string VarValue)
     varsN += 2;
     return 2;
 }
-size_t split(const std::string &txt, std::vector<std::string> &strs, char ch)
-{
-    size_t pos = txt.find(ch);
-    size_t initialPos = 0;
-    strs.clear();
 
-    // Decompose statement
-    while (pos != std::string::npos)
-    {
-        strs.push_back(txt.substr(initialPos, pos - initialPos));
-        initialPos = pos + 1;
-
-        pos = txt.find(ch, initialPos);
-    }
-
-    // Add the last one
-    strs.push_back(txt.substr(initialPos, std::min(pos, txt.size()) - initialPos + 1));
-
-    return strs.size();
-}
 int Argser::runfile()
 {
     string Code;
@@ -265,6 +275,7 @@ int Argser::Parse()
     {
 
         charstr++;
+
         //cout << charstr << this->argv[charstr] << endl;
         if (strcmp(this->argv[charstr].c_str(), "init") == 0)
         {
@@ -361,10 +372,40 @@ int Argser::Parse()
             Compile();
             //system()
         }
-        else if (strcmp(getVar(this->argv[charstr]).c_str(), this->argv[charstr].c_str()))
+        /*else if (strcmp(getVar(this->argv[charstr]).c_str(), this->argv[charstr].c_str()))
         {
             
             cout <<GREEN<< getVar(this->argv[charstr])<<RESET << endl;
+        }*/
+        else if (strcmp(this->argv[charstr].c_str(), "func") == 0)
+        {
+            charstr++;
+            string FucName=this->argv[charstr];
+            //cout<<"Adding Func name: "<<FucName<<endl;
+            string FncCode;
+            bool EndOFFunc=0;
+            while (!EndOFFunc){
+                //cout<<this->argv[charstr]<<endl;
+                string InStr=this->argv[charstr];
+                if (strcmp(InStr.c_str(),"end;")==0){
+                    EndOFFunc=1;
+                }
+                else{
+                FncCode.append(InStr.c_str());
+                FncCode.append(" ");
+                
+                }
+                charstr++;
+            }
+            
+            this->newFunc(FucName,FncCode);
+            cout<<"analized Func properly"<<endl;
+        }
+        else if(strcmp(this->argv[charstr].c_str(),"call")==0){
+            
+            cout<<"attemplting to execute Func: "<<this->argv[charstr+1]<<endl;
+            charstr++;
+            this->executeFunc(this->argv[charstr]);
         }
         else if (strcmp(this->argv[charstr].c_str(), "-help")==0)
         {
