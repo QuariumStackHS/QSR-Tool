@@ -1,6 +1,5 @@
 #include "includes/config.hpp"
 #include <fstream> // std::fstream
-
 #include "../Cfg.hpp"
 /*
 Args parser, analyze and execute
@@ -30,19 +29,21 @@ size_t split(const std::string &txt, std::vector<std::string> &strs, char ch)
 
     return strs.size();
 }
-class Helper{
-    public:
-        Helper();
+class Helper
+{
+public:
+    Helper();
 };
-Helper::Helper(){
- cout <<"Commands avalaible (In Terminal and in scripts, note that both are treat the same)"<< endl
- <<     "\"compile [Module]\""<<endl
- <<     "\"build [Module]\""<<endl
- <<     "\"link\", Link All QSRobj to build an APP"<<endl
- <<     "\"var [varname] [varvalue]\" create new variable"<<endl
- <<     "\"[real]|[local]-update\", update from local or from github"<<endl
- <<     "\"init\", initialise all folders for QSR to perform"<<endl
- <<     "\"add [Module]\", not that compile will compile the src/[Module]/main.cpp"<<endl;
+Helper::Helper()
+{
+    cout << "Commands avalaible (In Terminal and in scripts, note that both are treat the same)" << endl
+         << "\"compile [Module]\"" << endl
+         << "\"build [Module]\"" << endl
+         << "\"link\", Link All QSRobj to build an APP" << endl
+         << "\"var [varname] [varvalue]\" create new variable" << endl
+         << "\"[real]|[local]-update\", update from local or from github" << endl
+         << "\"init\", initialise all folders for QSR to perform" << endl
+         << "\"add [Module]\", not that compile will compile the src/[Module]/main.cpp" << endl;
 }
 class Argser
 {
@@ -77,24 +78,27 @@ private:
 };
 int Argser::newFunc(string funcName, string funcCode)
 {
-    
+
     this->FuncName.push_back(funcName);
     this->FuncCode.push_back(funcCode);
     //cout<<"attempting to Create function: "<<funcName<<" | "<<funcCode<<endl;
     this->NextFNCID++;
-    
+
     return this->NextFNCID;
 }
 int Argser::executeFunc(string tFuncName)
 {
-    for (int i=0;i<this->NextFNCID;i++){
-        if(strcmp(tFuncName.c_str(),this->FuncName[i].c_str())==0){
+    for (int i = 0; i < this->NextFNCID; i++)
+    {
+        if (strcmp(tFuncName.c_str(), this->FuncName[i].c_str()) == 0)
+        {
             std::__1::vector<std::__1::string>::iterator it = this->argv.begin();
             vector<string> Ins;
-            split(this->FuncCode[i],Ins,' ');
-            for (int j=0;j<Ins.size();j++){
-                this->argc+=Ins.size();
-            this->argv.insert(it+charstr+j,Ins[j]);
+            split(this->FuncCode[i], Ins, ' ');
+            for (int j = 1; j < Ins.size(); j++)
+            {
+                this->argc += Ins.size();
+                this->argv.insert(it + charstr + j, Ins[j]);
             }
         }
     }
@@ -122,11 +126,37 @@ string Argser::getVar(string varname)
     }
     return varname;
 }
+
 int Argser::newVar(string varname, string VarValue)
 {
-    this->vars.push_back(varname.c_str());
-    this->vars.push_back(VarValue.c_str());
-    varsN += 2;
+    if (strcmp(this->getVar(varname).c_str(), varname.c_str()) == 0)
+    {
+        this->vars.push_back(varname.c_str());
+        this->vars.push_back(VarValue.c_str());
+        varsN += 2;
+    }
+    else
+    {
+
+        for (int i = 0; i < varsN; i++)
+        {
+            //cout<<this->vars[i]<<"?"<<endl;
+            //cout<<this->vars[i-1]<<"?"<<endl;
+            if (strcmp(this->vars[i].c_str(), varname.c_str()) == 0)
+            {
+                size_t klm = i;
+                //cout<<this->vars[i+1]<<endl;
+                vars[i + 1] = VarValue;
+                //cout<<this->vars[i+1]<<endl;
+                //cout<<"\n\n"<<endl;
+            }
+            else
+            {
+                i++;
+            }
+        }
+    }
+
     return 2;
 }
 
@@ -151,20 +181,27 @@ int Argser::runfile()
         int k = v.size();
         for (int i = 0; i < k; i++)
         {
-            this->argv.push_back(v[i].c_str());
-            this->argc++;
+            if (strcmp(v[i].c_str(), ""))
+            {
+                this->argv.push_back(v[i].c_str());
+                this->argc++;
+            }
         }
-        cout << BOLDGREEN << "Line " << BOLDCYAN << SG << RESET << ": | " << Code;
+        if (this->Cfg.debug)
+            cout << BOLDGREEN << "Line " << BOLDCYAN << SG << RESET << ": | " << Code;
         int Termwidth = this->Cfg.Termwidth - Code.size() * 2;
         for (int i = 0; i < Termwidth / 2; i++)
         {
-            cout << " ";
+            if (this->Cfg.debug)
+                cout << " ";
         }
         if (Termwidth % 2 != 0)
         {
-            cout << " ";
+            if (this->Cfg.debug)
+                cout << " ";
         }
-        cout << "|" << BOLDYELLOW << ";" << RESET << endl;
+        if (this->Cfg.debug)
+            cout << "|" << BOLDYELLOW << ";" << RESET << endl;
 
         //cout << "Line: " << SG<< " " << Code << endl;
         //return 0;
@@ -175,16 +212,19 @@ int Argser::runfile()
     int Termwidth = this->Cfg.Termwidth - EOFD.size() * 2;
     for (int i = 0; i < Termwidth / 2; i++)
     {
-        cout << "-";
+        if (this->Cfg.debug)
+            cout << "-";
     }
     cout << RESET << RED << EOFD << RESET;
     for (int i = 0; i < Termwidth / 2; i++)
     {
-        cout << "-";
+        if (this->Cfg.debug)
+            cout << "-";
     }
     if (Termwidth % 2 != 0)
     {
-        cout << "-";
+        if (this->Cfg.debug)
+            cout << "-";
     }
     cout << endl
          << endl;
@@ -286,7 +326,7 @@ int Argser::Parse()
             system("mkdir Build/exe");
             system("mkdir scripts");
         }
-        else if (strcmp(this->argv[charstr].c_str(), "Link") == 0)
+        else if (strcmp(this->argv[charstr].c_str(), "link") == 0)
         {
             Link();
         }
@@ -380,43 +420,50 @@ int Argser::Parse()
         else if (strcmp(this->argv[charstr].c_str(), "func") == 0)
         {
             charstr++;
-            string FucName=this->argv[charstr];
+            string FucName = this->argv[charstr];
             //cout<<"Adding Func name: "<<FucName<<endl;
             string FncCode;
-            bool EndOFFunc=0;
-            while (!EndOFFunc){
-                //cout<<this->argv[charstr]<<endl;
-                string InStr=this->argv[charstr];
-                if (strcmp(InStr.c_str(),"end;")==0){
-                    EndOFFunc=1;
-                }
-                else{
-                FncCode.append(InStr.c_str());
-                FncCode.append(" ");
-                
-                }
+            bool EndOFFunc = 0;
+            while (!EndOFFunc)
+            {
                 charstr++;
+                //cout<<this->argv[charstr]<<endl;
+                string InStr = this->argv[charstr];
+                if (strcmp(InStr.c_str(), "end;") == 0)
+                {
+                    EndOFFunc = 1;
+                }
+                else
+                {
+                    FncCode.append(InStr.c_str());
+                    FncCode.append(" ");
+                }
             }
-            
-            this->newFunc(FucName,FncCode);
-            cout<<"analized Func properly"<<endl;
+
+            this->newFunc(FucName, FncCode);
+            cout << "analized Func properly" << endl;
+            //charstr--;
         }
-        else if(strcmp(this->argv[charstr].c_str(),"call")==0){
-            
-            cout<<"attemplting to execute Func: "<<this->argv[charstr+1]<<endl;
+        else if (strcmp(this->argv[charstr].c_str(), "call") == 0)
+        {
+
+            cout << "attemplting to execute Func: " << this->argv[charstr + 1] << endl;
             charstr++;
             this->executeFunc(this->argv[charstr]);
+            //charstr++;
         }
-        else if (strcmp(this->argv[charstr].c_str(), "-help")==0)
+        else if (strcmp(this->argv[charstr].c_str(), "-help") == 0)
         {
             Helper();
             exit(0);
         }
+        else if (strcmp(this->argv[charstr].c_str(), "") == 0)
+        {
+        }
         else
         {
-            if (this->Cfg.debug){
-            cout << "Unknown shit: " << this->argv[charstr] << endl;
-            }
+
+            cout << "Unknown Instruction: \"" << this->argv[charstr] << "\"  at: " << charstr << endl;
         }
         //cout<<getVar(this->argv[charstr])<<endl;
         //cout<<"isvar??"<<this->argv[charstr]<<"->"<<(strcmp(getVar(this->argv[charstr]).c_str(),"Null") == 1)<<endl;

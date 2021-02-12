@@ -5,6 +5,6 @@ Configurator::Configurator()
     this->CPPLang = CPP17;
     this->ProgrameName = "QSR";
     this->Termwidth=75;
-    this->debug=0;
+    this->debug=1;
 }
 //#endif

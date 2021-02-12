@@ -45,6 +45,5 @@ class Configurator{
     int CPPLang;
     int Termwidth;
     bool debug;
-
 };
 #endif
