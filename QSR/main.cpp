@@ -36,7 +36,7 @@ public:
 };
 Helper::Helper()
 {
-    cout << "Commands avalaible (In Terminal and in scripts, note that both are treat the same)" << endl
+    cout << GREEN << "Commands avalaible (In Terminal and in scripts, note that both are treat the same)" << endl
          << "\"compile [Module]\"" << endl
          << "\"build [Module]\"" << endl
          << "\"link\", Link All QSRobj to build an APP" << endl
@@ -188,7 +188,7 @@ int Argser::runfile()
             }
         }
         if (this->Cfg.debug)
-            cout << BOLDGREEN << "Line " << BOLDCYAN << SG << RESET << ": | " << Code;
+            cout << BOLDGREEN << "Line: " << BOLDCYAN << SG << RESET << " \t|" << Code;
         int Termwidth = this->Cfg.Termwidth - Code.size() * 2;
         for (int i = 0; i < Termwidth / 2; i++)
         {
@@ -361,7 +361,8 @@ int Argser::Parse()
             newVar(this->argv[charstr], this->argv[charstr + 1]);
             if (this->Cfg.debug)
             {
-                cout << "new variable named: \"" << this->argv[charstr] << "\" with value: " << this->argv[charstr + 1] << endl;
+                cout << "DEBUG: new variable named: \"" << this->argv[charstr] << "\" with value: " << this->argv[charstr + 1] << endl;
+                //if()
             }
             charstr++;
         }
@@ -441,15 +442,32 @@ int Argser::Parse()
             }
 
             this->newFunc(FucName, FncCode);
-            cout << "analized Func properly" << endl;
+            //cout << "analized Func properly" << endl;
             //charstr--;
         }
         else if (strcmp(this->argv[charstr].c_str(), "call") == 0)
         {
+            bool isexist = 0;
+            //cout<<this->FuncName.size()<<endl;
+            for (int i = 0; i < this->FuncName.size(); i++)
+            {
+                if (strcmp(this->FuncName[i].c_str(), this->argv[charstr + 1].c_str()) == 0)
+                {
+                    isexist = 1;
+                }
+            }
+            if (isexist)
+            {
+                cout << GREEN << "executing Function" << RESET << " \"" << YELLOW << this->argv[charstr + 1] << RESET << "\":\n";
 
-            cout << "attemplting to execute Func: " << this->argv[charstr + 1] << endl;
+                this->executeFunc(this->argv[charstr + 1]);
+            }
+            else
+            {
+                cout << "Unknown Function:\"" << this->argv[charstr + 1] << "\"" << endl;
+            }
+            //charstr++;
             charstr++;
-            this->executeFunc(this->argv[charstr]);
             //charstr++;
         }
         else if (strcmp(this->argv[charstr].c_str(), "-help") == 0)
@@ -462,8 +480,19 @@ int Argser::Parse()
         }
         else
         {
-
-            cout << "Unknown Instruction: \"" << this->argv[charstr] << "\"  at: " << charstr << endl;
+            bool isexist = 0;
+            //cout<<this->FuncName.size()<<endl;
+            for (int i = 0; i < this->FuncName.size(); i++)
+            {
+                if (strcmp(this->FuncName[i].c_str(), this->argv[charstr].c_str()) == 0)
+                {
+                    isexist = 1;
+                }
+            }
+            if (isexist == 0)
+            {
+                cout << "Unknown Instruction: \"" << this->argv[charstr] << "\"  at: " << charstr << endl;
+            }
         }
         //cout<<getVar(this->argv[charstr])<<endl;
         //cout<<"isvar??"<<this->argv[charstr]<<"->"<<(strcmp(getVar(this->argv[charstr]).c_str(),"Null") == 1)<<endl;
@@ -497,4 +526,3 @@ int main(int argc, char **argv)
         cout << "Error: " << e.what() << endl;
     }
     return 0;
-}
