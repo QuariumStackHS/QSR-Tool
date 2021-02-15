@@ -1,9 +1,11 @@
 #include "includes/config.hpp"
+#include "includes/admin.hpp"
 #include <fstream> // std::fstream
 #include "../Cfg.hpp"
 /*
 Args parser, analyze and execute
 */
+
 struct var
 {
     string varname;
@@ -332,9 +334,12 @@ int Argser::Parse()
         }
         else if (strcmp(this->argv[charstr].c_str(), "exit") == 0)
         {
+            cout << "---Exiting!---" << endl;
             exit(0);
         }
-
+        else if (strcmp(this->argv[charstr].c_str(),"Admin")==0){
+            Frame();
+        }
         else if (strcmp(this->argv[charstr].c_str(), "-QF") == 0)
         {
             charstr++;
@@ -526,3 +531,4 @@ int main(int argc, char **argv)
         cout << "Error: " << e.what() << endl;
     }
     return 0;
+}
