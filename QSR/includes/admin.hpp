@@ -1,13 +1,5 @@
 #include "config.hpp"
 #include <fstream>
-struct coords
-{
-    int fromX;
-    int fromY;
-
-    int ToX;
-    int Toy;
-};
 struct coord
 {
     int x;
@@ -23,12 +15,18 @@ public:
     int setStr(int, int, string);
 
 private:
-    char **buffer=nullptr;
-    coords drawCords;
+    vector<string>buffer;
+    int fromX;
+    int fromY;
+
+    int ToX;
+    int Toy;
 };
 int Frame::setChar(int X, int Y, char Char)
 {
-    this->buffer[X][Y] = Char;
+    /*auto x = this->buffer[X].begin();
+    //auto y = this->buffer[X][Y].begin();
+    buffer[X].insert(x+Y,Char);*/
     //this->buffer->insert(yChar);
     return 0;
 }
@@ -44,47 +42,29 @@ int Frame::setStr(int X, int Y, string str)
 }
 int Frame::Clear()
 {
-    for (int i = 0; i < drawCords.ToX; i++)
-    {
-    for (int j = 0; j < drawCords.Toy; j++)
-    {
-        buffer[i][j]='\0';
-    }   
-    }
+buffer.clear();
     return 0;
 }
 int Frame::draw()
 {
     
-    for (int i = drawCords.fromX; i < drawCords.ToX; i++)
+    for (int i = fromX; i < ToX; i++)
     {
-        for (int j = drawCords.fromY; j < drawCords.Toy; j++)
-        {
-            cout << buffer[i][j];
-        }
-        cout << endl;
+        
+        cout << buffer[i]<<endl;
     }
-    cout << this->buffer;
+    //cout << this->buffer;
     return 0;
 }
 Frame::Frame()
 {
-    this->buffer.
-    this->drawCords.fromX = 0;
-    this->drawCords.fromY = 0;
+    
+    fromX = 0;
+    fromY = 0;
 
-    this->drawCords.ToX = 20;
-    this->drawCords.Toy = 20;
-    for (int i = 0; i < this->drawCords.ToX; i++)
-    {
-    for (int j = 0; j < this->drawCords.Toy; j++)
-    {
-        this->buffer[i][j]='\0';
-    }   
-    }
-    Clear();
-    setStr(0, 0, "TestAdmin -I");
-    draw();
+    ToX = 20;
+    Toy = 20;
+    buffer.clear();
 }
 /*
 
