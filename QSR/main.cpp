@@ -50,6 +50,7 @@ Helper::Helper()
 class Argser
 {
 public:
+int AddCFnc(int (Argser::*)(),string);
     Argser(int, char **);
     int Parse();
     int Update();
@@ -58,8 +59,16 @@ public:
     int DeleteVar(string);
     string getVar(string);
     int GetInsL(int);
+    int GetSRCFId(string);
+    //Todo
+    int FncExist(string);
+    int Execute(string);
 
 private:
+    struct Fnc{
+        int (Argser::*CPP_Addr)();
+        string Fname;
+    };
     string getcurrentIns();
     int edit(string);
     int varsN = 0;
@@ -72,6 +81,7 @@ private:
     int import();
     string getnextIns();
     vector<string> vars;
+    vector<Fnc> Fncs;
 
     //2d xyz, x=func, y=code z=call
     int NextFNCID = 0;
@@ -83,7 +93,17 @@ private:
     vector<int> lines;
     vector<string> argv;
 };
-int Argser::GetInsL(int Ins){
+/*int Argser::GetSRCFId(string SrcF){
+    for (int i=0;i<FuncSrc.size();i++){
+        if(strcmp(SrcF.c_str(),FuncSrc[i].c_str())==0){
+            return i;
+        }
+    }
+    return -1;
+}*/
+
+int Argser::GetInsL(int Ins)
+{
     return this->lines[Ins];
 }
 int Argser::newFunc(string funcName, string funcCode)
@@ -91,6 +111,7 @@ int Argser::newFunc(string funcName, string funcCode)
 
     this->FuncName.push_back(funcName);
     this->FuncCode.push_back(funcCode);
+    //this->FuncSrc.push_back(funcSrc);
     //cout<<"attempting to Create function: "<<funcName<<" | "<<funcCode<<endl;
     this->NextFNCID++;
 
@@ -108,10 +129,10 @@ int Argser::executeFunc(string tFuncName)
 
             for (int j = 2; j < Ins.size(); j++)
             {
-                this->argc += Ins.size();
+                this->argc++;
                 this->argv.insert(it + charstr + j, Ins[j]);
                 vector<int>::iterator itL = this->lines.begin();
-                this->lines.insert(itL + charstr + j,0);
+                this->lines.insert(itL + charstr + j, 0);
             }
         }
     }
@@ -319,10 +340,12 @@ int Argser::Compile()
 
     return 0;
 }
-string Argser::getcurrentIns(){
+string Argser::getcurrentIns()
+{
     return this->argv[charstr];
 }
-string Argser::getnextIns(){
+string Argser::getnextIns()
+{
     charstr++;
     return getcurrentIns();
 }
@@ -331,31 +354,37 @@ int Argser::edit(string FN)
 
     return 0;
 }
-int Argser::import(){
-    
-    string SKN = getVar(getcurrentIns());
+int Argser::import()
+{
 
+    string SKN = getVar(getnextIns());
+    cout<<"importing: "<<SKN<<endl;
     ifstream Src(getVar(getcurrentIns()).c_str());
     string Code;
-    
+
     int SG = 0;
     while (getline(Src, Code))
     {
         SG++;
         std::vector<std::string> v;
         split(Code, v, ' ');
-        auto it = argv.begin() + charstr;
-        for (int i=0; i<v.size();i++){
-            //cout<<v[i]<<endl;
-        this->argv.insert(it+i, v[i].c_str()); 
+        //cout<<Code<<endl;
+        auto it = argv.begin() + charstr+1;
+        for (int i = 0; i < v.size(); i++)
+        {
+                this->argc ++;
+                this->argv.insert(it + i, v[i]);
+                cout<<v[i]<<endl;
         }
-        
-        this->argc++;
-        
+
+
+        //this->argc++;
+
         //cout << Code<<endl;
     }
+    getnextIns();
     charstr++;
-    cout<<"klol"<<endl;
+    cout << "klol" << endl;
 
     return 0;
 }
@@ -367,6 +396,7 @@ int Argser::Parse()
         charstr++;
 
         //cout << charstr << getcurrentIns() << endl;
+        //if ()
         if (strcmp(getcurrentIns().c_str(), "init") == 0)
         {
             system("mkdir Src");
@@ -376,9 +406,9 @@ int Argser::Parse()
             system("mkdir Build/exe");
             system("mkdir scripts");
         }
-        else if (strcmp(getcurrentIns().c_str(),"import")==0){
+        else if (strcmp(getcurrentIns().c_str(), "import") == 0)
+        {
             import();
-            
         }
         else if (strcmp(getcurrentIns().c_str(), "link") == 0)
         {
@@ -389,8 +419,9 @@ int Argser::Parse()
             cout << "---Exiting!---" << endl;
             exit(0);
         }
-        else if (strcmp(getcurrentIns().c_str(),"Admin")==0){
-            Frame ad =Frame();
+        else if (strcmp(getcurrentIns().c_str(), "Admin") == 0)
+        {
+            Frame ad = Frame();
             //ad.setChar(3,3,'p');
             //ad.draw();
         }
@@ -405,29 +436,32 @@ int Argser::Parse()
             Compile();
             Link();
         }
-        else if (strcmp(getcurrentIns().c_str(), "dump") == 0){
-            cout<<CYAN<<"Address\t"<<GREEN<<"instruction"<<endl;
-            int lastL=0;
-            for(int i=0;i < this->argc;i++){
-                int L=GetInsL(i);
-                
-                if ((L==0)||(strcmp(this->argv[i].c_str(),"")==0)){
+        else if (strcmp(getcurrentIns().c_str(), "dump") == 0)
+        {
+            cout << CYAN << "Address\t" << GREEN << "instruction" << endl;
+            int lastL = 0;
+            for (int i = 0; i < this->argv.size(); i++)
+            {
+                int L = GetInsL(i);
 
+                if ((L == 0) || (strcmp(this->argv[i].c_str(), "") == 0))
+                {
                 }
-                else{
-                    if (lastL==L){
-                cout<<"|\t"<<":"<<BOLDCYAN<<i<<RESET<<"\t"<<BOLDGREEN<<"\""<<this->argv[i]<<"\""<<RESET;
+                else
+                {
+                    if (lastL == L)
+                    {
+                        cout << "|\t"
+                             << ":" << BOLDCYAN << i << RESET << "\t" << BOLDGREEN << "\"" << this->argv[i] << "\"" << RESET;
+                    }
+                    else
+                    {
+                        cout << endl
+                             << "" << L + 1;
+                    }
                 }
-                else{
-                    cout<<endl<<""<<L+1;
-                }
-                }
-                lastL=L;
+                lastL = L;
             }
-
-            
-
-
         }
         else if (strcmp(getcurrentIns().c_str(), "run") == 0)
         {
@@ -483,16 +517,21 @@ int Argser::Parse()
         }
         else if (strcmp(getcurrentIns().c_str(), "export") == 0)
         {
-            if (strcmp(getcurrentIns().c_str(), "export")==0){
-
+            if (strcmp(getcurrentIns().c_str(), "export") == 0)
+            {
             }
-            else{
-                cout<<RED<<"Syntaxe error expected \"as\" keyword after export exemple: export as filname.qf"<<RESET<<endl;
+            else
+            {
+                cout << RED << "Syntaxe error expected \"as\" keyword after export exemple: export as filname.qf" << RESET << endl;
             }
             //charstr++;
         }
-        else if(strcmp(getcurrentIns().c_str(), "/*") == 0){
-            while(strcmp(getcurrentIns().c_str(), "*/") != 0){charstr++;}
+        else if (strcmp(getcurrentIns().c_str(), "/*") == 0)
+        {
+            while (strcmp(getcurrentIns().c_str(), "*/") != 0)
+            {
+                charstr++;
+            }
         }
         else if (strcmp(getcurrentIns().c_str(), "test") == 0)
         {
@@ -583,7 +622,7 @@ int Argser::Parse()
             }
             if (isexist == 0)
             {
-                cout << "Unknown Instruction: \"" << getcurrentIns() << "\"  at: " << charstr << endl;
+                cout << "Unknown Instruction: \"" << getcurrentIns() << "\"  at: " <<GetInsL(charstr)<<":"<< charstr << endl;
             }
         }
         //cout<<getVar(getcurrentIns())<<endl;
@@ -591,8 +630,17 @@ int Argser::Parse()
     }
     return 0;
 }
+int Argser::AddCFnc(int (Argser::*CPP_Addrs)(),string Fnames){
+    Fnc I;
+    I.CPP_Addr=CPP_Addrs;
+    I.Fname=Fnames;
+
+    Fncs.push_back(I);
+}
 Argser::Argser(int argc, char **argv)
 {
+
+
     this->argc = argc;
     for (int i = 0; i < argc; i++)
     {
