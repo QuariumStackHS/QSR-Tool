@@ -1,0 +1,17 @@
+BuildSk:
+func Compile as begin: compile p
+end;
+
+
+
+func Link as begin:
+    link
+end;
+var p main
+
+call Compile
+
+call Link
+
+dump
+exitk

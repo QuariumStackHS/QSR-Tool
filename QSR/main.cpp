@@ -31,6 +31,9 @@ size_t split(const std::string &txt, std::vector<std::string> &strs, char ch)
 
     return strs.size();
 }
+
+
+
 class Helper
 {
 public:
@@ -50,7 +53,8 @@ Helper::Helper()
 class Argser
 {
 public:
-int AddCFnc(int (Argser::*)(),string);
+    int AddCFnc(int (Argser::*)(), string);
+    typedef int (*TaskAddr)();
     Argser(int, char **);
     int Parse();
     int Update();
@@ -65,7 +69,57 @@ int AddCFnc(int (Argser::*)(),string);
     int Execute(string);
 
 private:
-    struct Fnc{
+    class Task
+    {
+    public:
+        Task(string fname, string desk, TaskAddr taddr)
+        {
+            this->Name = fname;
+            this->Desk = desk;
+            this->Taddr = taddr;
+        }
+        int RunTask(){
+            Taddr();
+            return 0;
+        }
+        string getname(){
+            return this->Name;
+        }
+    private:
+        string Name;
+        string Desk;
+        TaskAddr Taddr;
+    };
+    class Tasks
+    {
+    public:
+
+        Tasks()
+        {this->add_task(Task("build","compile+link",));
+
+        else if (strcmp(getcurrentIns().c_str(), "build") == 0)
+        {
+            //charstr++;
+
+        }
+        }
+        int add_task(Task t)
+        {
+            this->__Tasks.push_back(t);
+        }
+        int try_task(string tname){
+            for (int i=0;i<this->__Tasks.size();i++){
+                if(strcmp(this->__Tasks[i].getname().c_str(),tname.c_str())==0){
+                    return this->__Tasks[i].RunTask();
+                }
+            }
+
+        }
+
+        vector<Task> __Tasks;
+    };
+    struct Fnc
+    {
         int (Argser::*CPP_Addr)();
         string Fname;
     };
@@ -101,7 +155,11 @@ private:
     }
     return -1;
 }*/
-
+class ins: Argser{
+    ins(){
+        
+    }
+};
 int Argser::GetInsL(int Ins)
 {
     return this->lines[Ins];
@@ -358,7 +416,7 @@ int Argser::import()
 {
 
     string SKN = getVar(getnextIns());
-    cout<<"importing: "<<SKN<<endl;
+    cout << "importing: " << SKN << endl;
     ifstream Src(getVar(getcurrentIns()).c_str());
     string Code;
 
@@ -369,14 +427,13 @@ int Argser::import()
         std::vector<std::string> v;
         split(Code, v, ' ');
         //cout<<Code<<endl;
-        auto it = argv.begin() + charstr+1;
+        auto it = argv.begin() + charstr + 1;
         for (int i = 0; i < v.size(); i++)
         {
-                this->argc ++;
-                this->argv.insert(it + i, v[i]);
-                cout<<v[i]<<endl;
+            this->argc++;
+            this->argv.insert(it + i, v[i]);
+            cout << v[i] << endl;
         }
-
 
         //this->argc++;
 
@@ -430,12 +487,7 @@ int Argser::Parse()
             charstr++;
             runfile();
         }
-        else if (strcmp(getcurrentIns().c_str(), "build") == 0)
-        {
-            //charstr++;
-            Compile();
-            Link();
-        }
+
         else if (strcmp(getcurrentIns().c_str(), "dump") == 0)
         {
             cout << CYAN << "Address\t" << GREEN << "instruction" << endl;
@@ -622,7 +674,7 @@ int Argser::Parse()
             }
             if (isexist == 0)
             {
-                cout << "Unknown Instruction: \"" << getcurrentIns() << "\"  at: " <<GetInsL(charstr)<<":"<< charstr << endl;
+                cout << "Unknown Instruction: \"" << getcurrentIns() << "\"  at: " << GetInsL(charstr) << ":" << charstr << endl;
             }
         }
         //cout<<getVar(getcurrentIns())<<endl;
@@ -630,16 +682,16 @@ int Argser::Parse()
     }
     return 0;
 }
-int Argser::AddCFnc(int (Argser::*CPP_Addrs)(),string Fnames){
+int Argser::AddCFnc(int (Argser::*CPP_Addrs)(), string Fnames)
+{
     Fnc I;
-    I.CPP_Addr=CPP_Addrs;
-    I.Fname=Fnames;
+    I.CPP_Addr = CPP_Addrs;
+    I.Fname = Fnames;
 
     Fncs.push_back(I);
 }
 Argser::Argser(int argc, char **argv)
 {
-
 
     this->argc = argc;
     for (int i = 0; i < argc; i++)
