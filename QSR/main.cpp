@@ -6,6 +6,8 @@
 Args parser, analyze and execute
 */
 
+
+
 struct var
 {
     string varname;
@@ -32,8 +34,6 @@ size_t split(const std::string &txt, std::vector<std::string> &strs, char ch)
     return strs.size();
 }
 
-
-
 class Helper
 {
 public:
@@ -50,14 +50,42 @@ Helper::Helper()
          << "\"init\", initialise all folders for QSR to perform" << endl
          << "\"add [Module]\", not that compile will compile the src/[Module]/main.cpp" << endl;
 }
+
+struct CallableObj{
+        void *(*Taddr)(Argser*);
+        string Name;
+        string Desk;
+};
+class QSRcModule{
+    public:
+        QSRcModule(string ModuleName){
+            this->Module_Name=ModuleName;
+        }
+        int add_Cask(string fname, string desk,void *(taddr)(Argser*))
+        {
+            CallableObj NCO;
+            NCO.Desk=desk;
+            NCO.Name=fname;
+            NCO.Taddr=taddr;
+            __Tasks.push_back(NCO);
+            return 0;
+        }
+    vector<CallableObj> __Tasks;
+    string Module_Name;
+
+};
+
 class Argser
 {
 public:
-    int AddCFnc(int (Argser::*)(), string);
-    typedef int (*TaskAddr)();
+    //typedef void *(*TaskAddr)(Argser*);
+
+
+    //int AddCFnc(TaskAddr, string);
+    
     Argser(int, char **);
     int Parse();
-    int Update();
+    //int Update();
     int runfile();
     int newVar(string, string);
     int DeleteVar(string);
@@ -68,56 +96,55 @@ public:
     int FncExist(string);
     int Execute(string);
 
-private:
-    class Task
-    {
-    public:
-        Task(string fname, string desk, TaskAddr taddr)
-        {
-            this->Name = fname;
-            this->Desk = desk;
-            this->Taddr = taddr;
+//private:
+        vector<QSRcModule> QS;
+        int add_Module(QSRcModule MD){
+            QS.push_back(MD);
+            return 0;
+
         }
-        int RunTask(){
-            Taddr();
+        int add_Cask(string fname, string desk,void *(taddr)(Argser*))
+        {
+            CallableObj NCO;
+            NCO.Desk=desk;
+            NCO.Name=fname;
+            NCO.Taddr=taddr;
+            __Tasks.push_back(NCO);
             return 0;
         }
-        string getname(){
-            return this->Name;
+        int RunTask()
+        {
+            
+            //return Taddr();
+            return 0;
         }
-    private:
-        string Name;
-        string Desk;
-        TaskAddr Taddr;
-    };
-    class Tasks
+        bool is_Name(CallableObj Obj, string Test_Name)
+        {
+            return (strcmp(Obj.Name.c_str(), Test_Name.c_str()) == 0);
+        }
+        /*string getname()
+        {
+            return Name;
+        }
+*/
+    int init_Func();
+
+    int try_task(string tname)
     {
-    public:
-
-        Tasks()
-        {this->add_task(Task("build","compile+link",));
-
-        else if (strcmp(getcurrentIns().c_str(), "build") == 0)
+        for (int i = 0; i < this->__Tasks.size(); i++)
         {
-            //charstr++;
-
-        }
-        }
-        int add_task(Task t)
-        {
-            this->__Tasks.push_back(t);
-        }
-        int try_task(string tname){
-            for (int i=0;i<this->__Tasks.size();i++){
-                if(strcmp(this->__Tasks[i].getname().c_str(),tname.c_str())==0){
-                    return this->__Tasks[i].RunTask();
-                }
+            if (is_Name(this->__Tasks[i],tname))
+            {
+                
+                auto Tadr = __Tasks[i].Taddr;
+                Tadr(this);
+                return 1;
             }
-
         }
+        return 0;
+    }
 
-        vector<Task> __Tasks;
-    };
+    vector<CallableObj> __Tasks;
     struct Fnc
     {
         int (Argser::*CPP_Addr)();
@@ -127,10 +154,10 @@ private:
     int edit(string);
     int varsN = 0;
     int charstr = 0;
-    int Compile();
-    int Link();
+    //int Compile();
+    //int Link();
     int executeFunc(string);
-    int Run();
+    //int Run();
     int newFunc(string, string);
     int import();
     string getnextIns();
@@ -155,11 +182,6 @@ private:
     }
     return -1;
 }*/
-class ins: Argser{
-    ins(){
-        
-    }
-};
 int Argser::GetInsL(int Ins)
 {
     return this->lines[Ins];
@@ -326,10 +348,10 @@ int Argser::runfile()
     Src.close();
     return 0;
 }
-int Argser::Run()
+void *Run(Argser*IN)
 {
     string Cmd01 = "./Build/exe/";
-    string Cmd02 = Cfg.ProgrameName;
+    string Cmd02 = IN->Cfg.ProgrameName;
     string Cmd03 = ".exe";
     string Cmd = Cmd01.append(Cmd02);
     string Cmd1 = Cmd.append(Cmd03);
@@ -337,22 +359,22 @@ int Argser::Run()
     cout << "Running using: \"" << Cmd << "\" | Return: " << system(Cmd1.c_str()) << endl;
     return 0;
 }
-int Argser::Link()
+void *Link(Argser*IN)
 {
     string Cmd01 = "g++ Build/obj/*.QSRobj -o Build/exe/";
-    string Cmd02 = Cfg.ProgrameName;
+    string Cmd02 = IN->Cfg.ProgrameName;
     string Cmd03 = ".exe -std=c++";
     string Cmd = Cmd01.append(Cmd02);
     string Cmd1 = Cmd.append(Cmd03);
-    string Cmd04 = to_string(Cfg.CPPLang);
+    string Cmd04 = to_string(IN->Cfg.CPPLang);
     string Cmd2 = Cmd1.append(Cmd04);
     int result = system(Cmd2.c_str());
     cout << BOLDBLUE << "Linking using: \"" << BOLDMAGENTA << Cmd2 << BLUE << "\" | Return: " << GREEN << result / 256 << RESET << endl;
     return 0;
 }
-int Argser::Update()
+void *Update(Argser*IN)
 {
-    if ((strcmp(getcurrentIns().c_str(), "local-update") == 0))
+    if ((strcmp(IN->getcurrentIns().c_str(), "App-RCP") == 0))
     {
         cout << "\nRecompiling QSR:" << endl;
         cout << "\tUpdating configuration.." << endl;
@@ -369,8 +391,9 @@ int Argser::Update()
         exit(0);
     }
 
-    else if ((strcmp(getcurrentIns().c_str(), "real-update") == 0))
+    else if ((strcmp(IN->getcurrentIns().c_str(), "App-RUP") == 0))
     {
+        system("git clone https://github.com/QuariumStackHS/QSR-Tool ");
         int i = system("g++ QSR-Tool/QSR/main.cpp -std=c++17 -o QSR.E");
         cout << "\nRecompiling QSR:" << endl;
         cout << "\tUpdating configuration.." << endl;
@@ -378,25 +401,25 @@ int Argser::Update()
 
         exit(0);
     }
-    return 1;
+    //return 1;
 }
-int Argser::Compile()
+void *Compile(Argser * In)
 {
-    charstr++;
-    cout << BOLDGREEN << "compiling: " << BOLDCYAN << Cfg.ProgrameName << "." << getVar(getcurrentIns()) << RESET << " as: " << BOLDYELLOW << getVar(getcurrentIns()) << ".QSRobj" << endl;
+    In->charstr++;
+    cout << BOLDGREEN << "compiling: " << BOLDCYAN << In->Cfg.ProgrameName << "." << In->getVar(In->getcurrentIns()) << RESET << " as: " << BOLDYELLOW << In->getVar(In->getcurrentIns()) << ".QSRobj" << endl;
     string Cmd01 = "g++ src/";
-    string Cmd02 = getVar(getcurrentIns());
+    string Cmd02 = In->getVar(In->getcurrentIns());
     string Cmd03 = "/main.cpp -c -o Build/obj/";
     string Cmd = Cmd01.append(Cmd02);
     string Cmd1 = Cmd.append(Cmd03);
     string Cmd2 = Cmd1.append(Cmd02);
     string Cmd3 = Cmd2.append(".QSRobj -Iincludes -std=c++");
-    string Cmd04 = to_string(Cfg.CPPLang);
+    string Cmd04 = to_string(In->Cfg.CPPLang);
     string Cmd05 = Cmd3.append(Cmd04);
     int result = system(Cmd3.c_str());
     cout << BOLDYELLOW << "Compile using: \"" << BOLDMAGENTA << Cmd05 << YELLOW << "\" | Return: " << GREEN << result / 256 << RESET << endl;
 
-    return 0;
+    //return 0;
 }
 string Argser::getcurrentIns()
 {
@@ -454,7 +477,10 @@ int Argser::Parse()
 
         //cout << charstr << getcurrentIns() << endl;
         //if ()
-        if (strcmp(getcurrentIns().c_str(), "init") == 0)
+        if(this->try_task(getcurrentIns())){
+
+        }
+        else if (strcmp(getcurrentIns().c_str(), "init") == 0)
         {
             system("mkdir Src");
             system("mkdir includes");
@@ -466,10 +492,6 @@ int Argser::Parse()
         else if (strcmp(getcurrentIns().c_str(), "import") == 0)
         {
             import();
-        }
-        else if (strcmp(getcurrentIns().c_str(), "link") == 0)
-        {
-            Link();
         }
         else if (strcmp(getcurrentIns().c_str(), "exit") == 0)
         {
@@ -517,7 +539,7 @@ int Argser::Parse()
         }
         else if (strcmp(getcurrentIns().c_str(), "run") == 0)
         {
-            Run();
+            
         }
         else if (strcmp(getcurrentIns().c_str(), "del") == 0)
         {
@@ -552,17 +574,6 @@ int Argser::Parse()
         
         */
         }
-        else if (strcmp(getcurrentIns().c_str(), "real-update") == 0)
-        {
-            system("git clone https://github.com/QuariumStackHS/QSR-Tool ");
-            Update();
-        }
-        else if (strcmp(getcurrentIns().c_str(), "local-update") == 0)
-        {
-            Update();
-            //system("g++ -c Cfg.hpp -o QSR/Private/Config.obj");
-            //system("g++ QSR/Private/*.obj -o QSR.E");
-        }
         else if (strcmp(getcurrentIns().c_str(), "pause") == 0)
         {
             system("pause");
@@ -584,17 +595,6 @@ int Argser::Parse()
             {
                 charstr++;
             }
-        }
-        else if (strcmp(getcurrentIns().c_str(), "test") == 0)
-        {
-            Compile();
-            Link();
-            Run();
-        }
-        else if (strcmp(getcurrentIns().c_str(), "compile") == 0)
-        {
-            Compile();
-            //system()
         }
         /*else if (strcmp(getVar(getcurrentIns()).c_str(), getcurrentIns().c_str()))
         {
@@ -682,14 +682,14 @@ int Argser::Parse()
     }
     return 0;
 }
-int Argser::AddCFnc(int (Argser::*CPP_Addrs)(), string Fnames)
+/*int Argser::AddCFnc(int (Argser::*CPP_Addrs)(), string Fnames)
 {
     Fnc I;
     I.CPP_Addr = CPP_Addrs;
     I.Fname = Fnames;
 
     Fncs.push_back(I);
-}
+}*/
 Argser::Argser(int argc, char **argv)
 {
 
@@ -699,19 +699,40 @@ Argser::Argser(int argc, char **argv)
         string f = argv[i];
         this->argv.push_back(f);
     }
+    this->init_Func();
+}
+void *import_Module(Argser *IN){
+IN->
+
+}
+
+int Argser::init_Func()
+{
+    //&Compile;
+    add_Cask("compile","Build+run",&Compile);
+    add_Cask("link","Link",&Link);
+    add_Cask("App-RCP","Recompile app from local source",&Update);
+    add_Cask("App-RUP","Update from master-Github and recompile",&Update);
+    add_Cask("run","Update from master-Github and recompile",&Run);
+
+    return 0;
 }
 
 int main(int argc, char **argv)
 {
     cout << "---------QSR compiler---------" << endl;
-
+    char ch;
+    /*while(true){
+    cin>>ch;
+    //cout<<ch;
+    }*/
     try
     {
         Argser Args = Argser(argc, argv);
 
         Args.Parse();
 
-        Args.Update();
+        //Args.Update();
     }
     catch (const std::exception &e)
     {

@@ -1,5 +1,7 @@
 BuildSk:
-func Compile as begin: compile p
+func Compile
+as begin:
+compile p
 end;
 
 
@@ -10,8 +12,4 @@ end;
 var p main
 
 call Compile
-
 call Link
-
-dump
-exitk
