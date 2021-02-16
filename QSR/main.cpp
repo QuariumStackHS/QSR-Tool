@@ -6,8 +6,6 @@
 Args parser, analyze and execute
 */
 
-
-
 struct var
 {
     string varname;
@@ -34,55 +32,38 @@ size_t split(const std::string &txt, std::vector<std::string> &strs, char ch)
     return strs.size();
 }
 
-class Helper
-{
-public:
-    Helper();
-};
-Helper::Helper()
-{
-    cout << GREEN << "Commands avalaible (In Terminal and in scripts, note that both are treat the same)" << endl
-         << "\"compile [Module]\"" << endl
-         << "\"build [Module]\"" << endl
-         << "\"link\", Link All QSRobj to build an APP" << endl
-         << "\"var [varname] [varvalue]\" create new variable" << endl
-         << "\"[real]|[local]-update\", update from local or from github" << endl
-         << "\"init\", initialise all folders for QSR to perform" << endl
-         << "\"add [Module]\", not that compile will compile the src/[Module]/main.cpp" << endl;
-}
-
-struct CallableObj{
-        void *(*Taddr)(Argser*);
-        string Name;
-        string Desk;
-};
-class QSRcModule{
-    public:
-        QSRcModule(string ModuleName){
-            this->Module_Name=ModuleName;
-        }
-        int add_Cask(string fname, string desk,void *(taddr)(Argser*))
-        {
-            CallableObj NCO;
-            NCO.Desk=desk;
-            NCO.Name=fname;
-            NCO.Taddr=taddr;
-            __Tasks.push_back(NCO);
-            return 0;
-        }
-    vector<CallableObj> __Tasks;
-    string Module_Name;
-
-};
-
 class Argser
 {
 public:
+    struct CallableObj
+    {
+        void *(*Taddr)(Argser *);
+        string Name;
+        string Desk;
+    };
+    class QSRcModule
+    {
+    public:
+        QSRcModule(string ModuleName)
+        {
+            this->Module_Name = ModuleName;
+        }
+        int add_Cask(string fname, string desk, void *(taddr)(Argser *))
+        {
+            CallableObj NCO;
+            NCO.Desk = desk;
+            NCO.Name = fname;
+            NCO.Taddr = taddr;
+            __Tasks.push_back(NCO);
+            return 0;
+        }
+        vector<CallableObj> __Tasks;
+        string Module_Name;
+    };
     //typedef void *(*TaskAddr)(Argser*);
 
-
     //int AddCFnc(TaskAddr, string);
-    
+
     Argser(int, char **);
     int Parse();
     //int Update();
@@ -96,33 +77,33 @@ public:
     int FncExist(string);
     int Execute(string);
 
-//private:
-        vector<QSRcModule> QS;
-        int add_Module(QSRcModule MD){
-            QS.push_back(MD);
-            return 0;
+    //private:
+    vector<QSRcModule> QS;
+    int add_Module(QSRcModule MD)
+    {
+        QS.push_back(MD);
+        return 0;
+    }
+    int add_Cask(string fname, string desk, void *(taddr)(Argser *))
+    {
+        CallableObj NCO;
+        NCO.Desk = desk;
+        NCO.Name = fname;
+        NCO.Taddr = taddr;
+        __Tasks.push_back(NCO);
+        return 0;
+    }
+    int RunTask()
+    {
 
-        }
-        int add_Cask(string fname, string desk,void *(taddr)(Argser*))
-        {
-            CallableObj NCO;
-            NCO.Desk=desk;
-            NCO.Name=fname;
-            NCO.Taddr=taddr;
-            __Tasks.push_back(NCO);
-            return 0;
-        }
-        int RunTask()
-        {
-            
-            //return Taddr();
-            return 0;
-        }
-        bool is_Name(CallableObj Obj, string Test_Name)
-        {
-            return (strcmp(Obj.Name.c_str(), Test_Name.c_str()) == 0);
-        }
-        /*string getname()
+        //return Taddr();
+        return 0;
+    }
+    bool is_Name(CallableObj Obj, string Test_Name)
+    {
+        return (strcmp(Obj.Name.c_str(), Test_Name.c_str()) == 0);
+    }
+    /*string getname()
         {
             return Name;
         }
@@ -133,9 +114,9 @@ public:
     {
         for (int i = 0; i < this->__Tasks.size(); i++)
         {
-            if (is_Name(this->__Tasks[i],tname))
+            if (is_Name(this->__Tasks[i], tname))
             {
-                
+
                 auto Tadr = __Tasks[i].Taddr;
                 Tadr(this);
                 return 1;
@@ -182,6 +163,38 @@ public:
     }
     return -1;
 }*/
+class Helper
+{
+public:
+    Helper(Argser *);
+};
+Helper::Helper(Argser *HTL)
+{
+    cout << "┌";
+    for (int i = 1; i < (HTL->Cfg.Termwidth / 2) - strlen("Addr\t|\tFunc\t|\tDescription"); i++)
+    {
+        cout << "─";
+    }
+    //cout
+    cout << "Func"
+         << "\t|\t"
+         << "Description";
+    for (float i = 1; i < (HTL->Cfg.Termwidth / 2.1); i++)
+    {
+        cout << "─";
+    }
+    cout << "┐" << endl;
+    for (int i = 0; i < HTL->__Tasks.size(); i++)
+    {
+
+        cout << "│\t" << HTL->__Tasks[i].Name << "\t\t|\t" << HTL->__Tasks[i].Desk;
+        for (float i = 0; i < HTL->Cfg.Termwidth + (strlen(HTL->__Tasks[i].Name.c_str()) - strlen("|\t\t|\t") - strlen(HTL->__Tasks[i].Desk.c_str()) / 2); i++)
+        {
+            cout << " ";
+        }
+        cout << "│" << endl;
+    }
+}
 int Argser::GetInsL(int Ins)
 {
     return this->lines[Ins];
@@ -348,7 +361,7 @@ int Argser::runfile()
     Src.close();
     return 0;
 }
-void *Run(Argser*IN)
+void *Run(Argser *IN)
 {
     string Cmd01 = "./Build/exe/";
     string Cmd02 = IN->Cfg.ProgrameName;
@@ -359,7 +372,7 @@ void *Run(Argser*IN)
     cout << "Running using: \"" << Cmd << "\" | Return: " << system(Cmd1.c_str()) << endl;
     return 0;
 }
-void *Link(Argser*IN)
+void *Link(Argser *IN)
 {
     string Cmd01 = "g++ Build/obj/*.QSRobj -o Build/exe/";
     string Cmd02 = IN->Cfg.ProgrameName;
@@ -372,7 +385,7 @@ void *Link(Argser*IN)
     cout << BOLDBLUE << "Linking using: \"" << BOLDMAGENTA << Cmd2 << BLUE << "\" | Return: " << GREEN << result / 256 << RESET << endl;
     return 0;
 }
-void *Update(Argser*IN)
+void *Update(Argser *IN)
 {
     if ((strcmp(IN->getcurrentIns().c_str(), "App-RCP") == 0))
     {
@@ -403,7 +416,7 @@ void *Update(Argser*IN)
     }
     //return 1;
 }
-void *Compile(Argser * In)
+void *Compile(Argser *In)
 {
     In->charstr++;
     cout << BOLDGREEN << "compiling: " << BOLDCYAN << In->Cfg.ProgrameName << "." << In->getVar(In->getcurrentIns()) << RESET << " as: " << BOLDYELLOW << In->getVar(In->getcurrentIns()) << ".QSRobj" << endl;
@@ -477,8 +490,8 @@ int Argser::Parse()
 
         //cout << charstr << getcurrentIns() << endl;
         //if ()
-        if(this->try_task(getcurrentIns())){
-
+        if (this->try_task(getcurrentIns()))
+        {
         }
         else if (strcmp(getcurrentIns().c_str(), "init") == 0)
         {
@@ -539,7 +552,6 @@ int Argser::Parse()
         }
         else if (strcmp(getcurrentIns().c_str(), "run") == 0)
         {
-            
         }
         else if (strcmp(getcurrentIns().c_str(), "del") == 0)
         {
@@ -547,15 +559,6 @@ int Argser::Parse()
         }
         else if (strcmp(getcurrentIns().c_str(), "var") == 0)
         {
-
-            charstr++;
-            newVar(getcurrentIns(), this->argv[charstr + 1]);
-            if (this->Cfg.debug)
-            {
-                cout << "DEBUG: new variable named: \"" << getcurrentIns() << "\" with value: " << this->argv[charstr + 1] << endl;
-                //if()
-            }
-            charstr++;
         }
         else if (strcmp(getcurrentIns().c_str(), "add") == 0)
         {
@@ -577,17 +580,6 @@ int Argser::Parse()
         else if (strcmp(getcurrentIns().c_str(), "pause") == 0)
         {
             system("pause");
-        }
-        else if (strcmp(getcurrentIns().c_str(), "export") == 0)
-        {
-            if (strcmp(getcurrentIns().c_str(), "export") == 0)
-            {
-            }
-            else
-            {
-                cout << RED << "Syntaxe error expected \"as\" keyword after export exemple: export as filname.qf" << RESET << endl;
-            }
-            //charstr++;
         }
         else if (strcmp(getcurrentIns().c_str(), "/*") == 0)
         {
@@ -655,7 +647,7 @@ int Argser::Parse()
         }
         else if (strcmp(getcurrentIns().c_str(), "-help") == 0)
         {
-            Helper();
+            Helper(this);
             exit(0);
         }
         else if (strcmp(getcurrentIns().c_str(), "") == 0)
@@ -701,19 +693,48 @@ Argser::Argser(int argc, char **argv)
     }
     this->init_Func();
 }
-void *import_Module(Argser *IN){
-IN->
+void *Var(Argser *IN)
+{
 
+    //IN->charstr++;
+    int VarI=IN->charstr + 1;
+    IN->newVar(IN->getnextIns(), IN->argv[VarI+1]);
+    if (IN->Cfg.debug)
+    {
+        cout << "DEBUG: new variable named: \"" << IN->getcurrentIns() << "\" with value: " << IN->argv[VarI] << endl;
+        //if()
+    }
+    IN->charstr++;
+}
+void *Export(Argser *IN)
+{
+}
+void *import_Module(Argser *IN)
+{
+    for (int i = 0; i < IN->QS.size(); i++)
+    {
+        if (strcmp(IN->QS[i].Module_Name.c_str(), IN->getnextIns().c_str()) == 0)
+        {
+            for (int j = 0; j < IN->QS[i].__Tasks.size(); j++)
+            {
+                IN->__Tasks.push_back(IN->QS[i].__Tasks[j]);
+            }
+        }
+    }
+
+    //IN->add_Cask();
 }
 
 int Argser::init_Func()
 {
     //&Compile;
-    add_Cask("compile","Build+run",&Compile);
-    add_Cask("link","Link",&Link);
-    add_Cask("App-RCP","Recompile app from local source",&Update);
-    add_Cask("App-RUP","Update from master-Github and recompile",&Update);
-    add_Cask("run","Update from master-Github and recompile",&Run);
+    add_Cask("compile", "Build+run", &Compile);
+    add_Cask("link", "Link", &Link);
+    add_Cask("App-RCP", "Recompile app from local source", &Update);
+    add_Cask("App-RUP", "Update from master-Github and recompile", &Update);
+    add_Cask("run", "Update from master-Github and recompile", &Run);
+    add_Cask("import", "import [Module], note those are c++ import", &import_Module);
+    add_Cask("var", "[Varname] [Value], note those are Strings", &Var);
 
     return 0;
 }
