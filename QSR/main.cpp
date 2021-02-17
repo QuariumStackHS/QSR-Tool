@@ -1,7 +1,8 @@
-#include "includes/config.hpp"
-#include "includes/admin.hpp"
-#include <fstream> // std::fstream
+
+#include "includes/Argser.hpp"
 #include "../Cfg.hpp"
+
+#include "Modules.hpp"
 /*
 Args parser, analyze and execute
 */
@@ -31,169 +32,76 @@ size_t split(const std::string &txt, std::vector<std::string> &strs, char ch)
 
     return strs.size();
 }
-
-class Argser
-{
-public:
-    struct CallableObj
-    {
-        void *(*Taddr)(Argser *);
-        string Name;
-        string Desk;
-    };
-    class QSRcModule
-    {
-    public:
-        QSRcModule(string ModuleName)
-        {
-            this->Module_Name = ModuleName;
-        }
-        int add_Cask(string fname, string desk, void *(taddr)(Argser *))
-        {
-            CallableObj NCO;
-            NCO.Desk = desk;
-            NCO.Name = fname;
-            NCO.Taddr = taddr;
-            __Tasks.push_back(NCO);
-            return 0;
-        }
-        vector<CallableObj> __Tasks;
-        string Module_Name;
-    };
-    //typedef void *(*TaskAddr)(Argser*);
-
-    //int AddCFnc(TaskAddr, string);
-
-    Argser(int, char **);
-    int Parse();
-    //int Update();
-    int runfile();
-    int newVar(string, string);
-    int DeleteVar(string);
-    string getVar(string);
-    int GetInsL(int);
-    int GetSRCFId(string);
-    //Todo
-    int FncExist(string);
-    int Execute(string);
-
-    //private:
-    vector<QSRcModule> QS;
-    int add_Module(QSRcModule MD)
-    {
-        QS.push_back(MD);
-        return 0;
-    }
-    int add_Cask(string fname, string desk, void *(taddr)(Argser *))
-    {
-        CallableObj NCO;
-        NCO.Desk = desk;
-        NCO.Name = fname;
-        NCO.Taddr = taddr;
-        __Tasks.push_back(NCO);
-        return 0;
-    }
-    int RunTask()
-    {
-
-        //return Taddr();
-        return 0;
-    }
-    bool is_Name(CallableObj Obj, string Test_Name)
-    {
-        return (strcmp(Obj.Name.c_str(), Test_Name.c_str()) == 0);
-    }
-    /*string getname()
-        {
-            return Name;
-        }
-*/
-    int init_Func();
-
-    int try_task(string tname)
-    {
-        for (int i = 0; i < this->__Tasks.size(); i++)
-        {
-            if (is_Name(this->__Tasks[i], tname))
-            {
-
-                auto Tadr = __Tasks[i].Taddr;
-                Tadr(this);
-                return 1;
-            }
-        }
-        return 0;
-    }
-
-    vector<CallableObj> __Tasks;
-    struct Fnc
-    {
-        int (Argser::*CPP_Addr)();
-        string Fname;
-    };
-    string getcurrentIns();
-    int edit(string);
-    int varsN = 0;
-    int charstr = 0;
-    //int Compile();
-    //int Link();
-    int executeFunc(string);
-    //int Run();
-    int newFunc(string, string);
-    int import();
-    string getnextIns();
-    vector<string> vars;
-    vector<Fnc> Fncs;
-
-    //2d xyz, x=func, y=code z=call
-    int NextFNCID = 0;
-    vector<string> FuncName;
-    vector<string> FuncCode;
-    //vector<std::string> vardata;
-    Configurator Cfg = Configurator();
-    int argc;
-    vector<int> lines;
-    vector<string> argv;
-};
-/*int Argser::GetSRCFId(string SrcF){
-    for (int i=0;i<FuncSrc.size();i++){
-        if(strcmp(SrcF.c_str(),FuncSrc[i].c_str())==0){
-            return i;
-        }
-    }
-    return -1;
-}*/
-class Helper
-{
-public:
-    Helper(Argser *);
-};
 Helper::Helper(Argser *HTL)
 {
-    cout << "┌";
-    for (int i = 1; i < (HTL->Cfg.Termwidth / 2) - strlen("Addr\t|\tFunc\t|\tDescription"); i++)
+    string Module = HTL->argv[HTL->charstr + 1];
+    if (strcmp(Module.c_str(), "Base") == 0)
     {
-        cout << "─";
-    }
-    //cout
-    cout << "Func"
-         << "\t|\t"
-         << "Description";
-    for (float i = 1; i < (HTL->Cfg.Termwidth / 2.1); i++)
-    {
-        cout << "─";
-    }
-    cout << "┐" << endl;
-    for (int i = 0; i < HTL->__Tasks.size(); i++)
-    {
+        // Argser::QSRcModule M = HTL->;
+        cout << BOLDCYAN << "┌";
+        for (float i = 0; i < 11 - 4; i++)
+        {
+            cout << "─";
+        }
+        //cout
+        cout << "Function────────"
+             << "┬───────"
+             << "Description";
+        for (float i = 1; i < (HTL->Cfg.Termwidth / 2.1); i++)
+        {
+            cout << BOLDCYAN << "─";
+        }
+        cout << "┐" << RESET << endl;
+        for (int i = 0; i < HTL->__Tasks.size(); i++)
+        {
 
-        cout << "│\t" << HTL->__Tasks[i].Name << "\t\t|\t" << HTL->__Tasks[i].Desk;
-        for (float i = 0; i < HTL->Cfg.Termwidth + (strlen(HTL->__Tasks[i].Name.c_str()) - strlen("|\t\t|\t") - strlen(HTL->__Tasks[i].Desk.c_str()) / 2); i++)
+            cout << BOLDCYAN << "│\t" << BOLDBLUE << HTL->__Tasks[i].Name << BOLDCYAN << "\t\t|\t" << GREEN << HTL->__Tasks[i].Desk << endl;
+        }
+    }
+    else
+    {
+        Argser::QSRcModule M = HTL->getModule(Module);
+        if (M.__Tasks.size() == 0)
+        {
+            cout << "No Module named: " << Module << endl;
+            exit(0);
+        }
+        else
+        {
+
+            cout << BOLDCYAN << "┌";
+            for (float i = 0; i < 11 - 4; i++)
+            {
+                cout << "─";
+            }
+            //cout
+            cout << "Function────────┬"
+                 << "Module name────┬───"
+                 << "Description";
+            for (float i = 1; i < (HTL->Cfg.Termwidth / 2.1); i++)
+            {
+                cout << BOLDCYAN << "─";
+            }
+            cout << "┐" << RESET << endl;
+            for (int i = 0; i < M.__Tasks.size(); i++)
+            {
+
+                cout << BOLDCYAN << "│\t" << BOLDBLUE << M.__Tasks[i].Name << BOLDCYAN << "\t|" << MAGENTA << M.Module_Name << BOLDCYAN << "\t\t|\t" << GREEN << M.__Tasks[i].Desk << endl;
+                /*for (float i = 0; i < HTL->Cfg.Termwidth + (strlen(HTL->__Tasks[i].Name.c_str()) - strlen("|\t\t|\t") - strlen(HTL->__Tasks[i].Desk.c_str()) / 2); i++)
         {
             cout << " ";
+        }*/
+                //cout << "│" << endl;
+            }
         }
-        cout << "│" << endl;
     }
+    cout << BOLDCYAN << "└";
+    for (float i = 1; i < (HTL->Cfg.Termwidth + 4); i++)
+    {
+        cout << BOLDCYAN << "─";
+    }
+    cout << "┘" << endl;
+    exit(0);
 }
 int Argser::GetInsL(int Ins)
 {
@@ -204,6 +112,7 @@ int Argser::newFunc(string funcName, string funcCode)
 
     this->FuncName.push_back(funcName);
     this->FuncCode.push_back(funcCode);
+    //this->Func
     //this->FuncSrc.push_back(funcSrc);
     //cout<<"attempting to Create function: "<<funcName<<" | "<<funcCode<<endl;
     this->NextFNCID++;
@@ -513,7 +422,7 @@ int Argser::Parse()
         }
         else if (strcmp(getcurrentIns().c_str(), "Admin") == 0)
         {
-            Frame ad = Frame();
+            //Frame ad = Frame();
             //ad.setChar(3,3,'p');
             //ad.draw();
         }
@@ -595,60 +504,9 @@ int Argser::Parse()
         }*/
         else if (strcmp(getcurrentIns().c_str(), "func") == 0)
         {
-            charstr++;
-            string FucName = getcurrentIns();
-            //cout<<"Adding Func name: "<<FucName<<endl;
-            string FncCode;
-            bool EndOFFunc = 0;
-            while (!EndOFFunc)
-            {
-                charstr++;
-                //cout<<getcurrentIns()<<endl;
-                string InStr = getcurrentIns();
-                if (strcmp(InStr.c_str(), "end;") == 0)
-                {
-                    EndOFFunc = 1;
-                }
-                else
-                {
-                    FncCode.append(InStr.c_str());
-                    FncCode.append(" ");
-                }
-            }
-
-            this->newFunc(FucName, FncCode);
-            //cout << "analized Func properly" << endl;
-            //charstr--;
         }
         else if (strcmp(getcurrentIns().c_str(), "call") == 0)
         {
-            bool isexist = 0;
-            //cout<<this->FuncName.size()<<endl;
-            for (int i = 0; i < this->FuncName.size(); i++)
-            {
-                if (strcmp(this->FuncName[i].c_str(), this->argv[charstr + 1].c_str()) == 0)
-                {
-                    isexist = 1;
-                }
-            }
-            if (isexist)
-            {
-                cout << GREEN << "executing Function" << RESET << " \"" << YELLOW << this->argv[charstr + 1] << RESET << "\":\n";
-
-                this->executeFunc(this->argv[charstr + 1]);
-            }
-            else
-            {
-                cout << "Unknown Function:\"" << this->argv[charstr + 1] << "\"" << endl;
-            }
-            //charstr++;
-            charstr++;
-            //charstr++;
-        }
-        else if (strcmp(getcurrentIns().c_str(), "-help") == 0)
-        {
-            Helper(this);
-            exit(0);
         }
         else if (strcmp(getcurrentIns().c_str(), "") == 0)
         {
@@ -682,23 +540,37 @@ int Argser::Parse()
 
     Fncs.push_back(I);
 }*/
-Argser::Argser(int argc, char **argv)
+void *Call(Argser *IN)
 {
-
-    this->argc = argc;
-    for (int i = 0; i < argc; i++)
+    bool isexist = 0;
+    //cout<<this->FuncName.size()<<endl;
+    for (int i = 0; i < IN->FuncName.size(); i++)
     {
-        string f = argv[i];
-        this->argv.push_back(f);
+        if (strcmp(IN->FuncName[i].c_str(), IN->argv[IN->charstr + 1].c_str()) == 0)
+        {
+            isexist = 1;
+        }
     }
-    this->init_Func();
+    if (isexist)
+    {
+        cout << GREEN << "executing Function" << RESET << " \"" << YELLOW << IN->argv[IN->charstr + 1] << RESET << "\":\n";
+
+        IN->executeFunc(IN->argv[IN->charstr + 1]);
+    }
+    else
+    {
+        cout << "Unknown Function:\"" << IN->argv[IN->charstr + 1] << "\"" << endl;
+    }
+    //charstr++;
+    IN->charstr++;
+    //charstr++;
 }
 void *Var(Argser *IN)
 {
 
     //IN->charstr++;
-    int VarI=IN->charstr + 1;
-    IN->newVar(IN->getnextIns(), IN->argv[VarI+1]);
+    int VarI = IN->charstr + 1;
+    IN->newVar(IN->getnextIns(), IN->argv[VarI + 1]);
     if (IN->Cfg.debug)
     {
         cout << "DEBUG: new variable named: \"" << IN->getcurrentIns() << "\" with value: " << IN->argv[VarI] << endl;
@@ -711,20 +583,54 @@ void *Export(Argser *IN)
 }
 void *import_Module(Argser *IN)
 {
+    string N = IN->getnextIns();
+    cout << N << endl;
     for (int i = 0; i < IN->QS.size(); i++)
     {
-        if (strcmp(IN->QS[i].Module_Name.c_str(), IN->getnextIns().c_str()) == 0)
+
+        if (strcmp(IN->QS[i].Module_Name.c_str(), N.c_str()) == 0)
         {
             for (int j = 0; j < IN->QS[i].__Tasks.size(); j++)
             {
                 IN->__Tasks.push_back(IN->QS[i].__Tasks[j]);
             }
+            cout << "Module: " << N << " imported" << endl;
         }
     }
 
     //IN->add_Cask();
 }
+void *func(Argser *IN)
+{
+    IN->charstr++;
+    string FucName = IN->getcurrentIns();
+    //cout<<"Adding Func name: "<<FucName<<endl;
+    string FncCode;
+    bool EndOFFunc = 0;
+    while (!EndOFFunc)
+    {
+        IN->charstr++;
+        //cout<<getcurrentIns()<<endl;
+        string InStr = IN->getcurrentIns();
+        if (strcmp(InStr.c_str(), "end;") == 0)
+        {
+            EndOFFunc = 1;
+        }
+        else
+        {
+            FncCode.append(InStr.c_str());
+            FncCode.append(" ");
+        }
+    }
 
+    IN->newFunc(FucName, FncCode);
+    //cout << "analized Func properly" << endl;
+    //charstr--;
+}
+void *HelperI(Argser *TLM)
+{
+    Helper H = Helper(TLM);
+}
 int Argser::init_Func()
 {
     //&Compile;
@@ -735,6 +641,13 @@ int Argser::init_Func()
     add_Cask("run", "Update from master-Github and recompile", &Run);
     add_Cask("import", "import [Module], note those are c++ import", &import_Module);
     add_Cask("var", "[Varname] [Value], note those are Strings", &Var);
+    add_Cask("func", "[Fname] as begin: {Code} end; create new function", &func);
+    add_Cask("call", "[Func]", &Call);
+    add_Cask("-help", "[module]", &HelperI);
+
+    
+    Init_Modules(this);
+    
 
     return 0;
 }
