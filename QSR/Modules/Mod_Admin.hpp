@@ -15,6 +15,7 @@ void* Admin(Argser* IN){
 Argser::QSRcModule Admin_main(){
     Argser::QSRcModule M;
     M.Set_Name("Ads");
+    M.add_Cask("Admin-Page","Lets you manage Project",&Admin);
     return M;
 
 }
